@@ -17,17 +17,17 @@ jobs:
       matrix:
         include:
           - name: vote
-            context: ./vote
-            dockerfile: ./vote/Dockerfile
+            context: ./app/vote
+            dockerfile: ./app/vote/Dockerfile
           - name: result
-            context: ./result
-            dockerfile: ./result/Dockerfile
+            context: ./app/result
+            dockerfile: ./app/result/Dockerfile
           - name: worker
-            context: ./worker
-            dockerfile: ./worker/Dockerfile
-          - name: seed
-            context: ./seed
-            dockerfile: ./seed/Dockerfile
+            context: ./app/worker
+            dockerfile: ./app/worker/Dockerfile
+          - name: seed-data
+            context: ./deploy/seed-data
+            dockerfile: ./deploy/seed-data/Dockerfile
 
     steps:
       - name: Checkout
@@ -41,7 +41,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & Push (${{ matrix.name }})
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
