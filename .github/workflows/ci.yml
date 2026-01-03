@@ -1,0 +1,51 @@
+name: CI - Build & Push All Images
+
+on:
+  push:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: vote
+            context: ./vote
+            dockerfile: ./vote/Dockerfile
+          - name: result
+            context: ./result
+            dockerfile: ./result/Dockerfile
+          - name: worker
+            context: ./worker
+            dockerfile: ./worker/Dockerfile
+          - name: seed
+            context: ./seed
+            dockerfile: ./seed/Dockerfile
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & Push (${{ matrix.name }})
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}-${{ matrix.name }}:latest
+            ghcr.io/${{ github.repository }}-${{ matrix.name }}:${{ github.sha }}
